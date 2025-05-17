@@ -64,7 +64,7 @@ public class ScreenGlobalSettings implements Screen {
                     keyboard.start();
                 }
                 if (btnSound.hit(touch)) {
-                    isSoundOn = !isSoundOn;
+                    isSoundOn = false;
                     btnSound.setText(isSoundOn ? "Sound ON" : "Sound OFF");
                 }
                 if (btnBack.hit(touch)) {
@@ -93,7 +93,7 @@ public class ScreenGlobalSettings implements Screen {
     public void resume() {}
 
     @Override
-    public void hide() {}
+    public void hide() {saveSettings();}
 
     @Override
     public void dispose() {keyboard.dispose();}

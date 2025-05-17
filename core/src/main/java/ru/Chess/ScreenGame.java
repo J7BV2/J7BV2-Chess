@@ -4,20 +4,25 @@ import static ru.Chess.Main.*;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Align;
 
 public class ScreenGame implements Screen {
+    private static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2;
     private SpriteBatch batch;
+    private Vector3 touch;
     private OrthographicCamera camera;
     private ChessBoard board;
-    private BitmapFont font50, font70;
+    private BitmapFont font70;
     private Texture[] whitePieces;
     private Texture[] blackPieces;
     private Texture lightTile, darkTile;
+    private Main main;
 
     private Texture imgBackGround;
 
@@ -27,13 +32,20 @@ public class ScreenGame implements Screen {
     private Piece selectedPiece = null;
     private int selectedX = -1, selectedY = -1;
 
+    private PieceColor currentPlayer = PieceColor.WHITE;
+    private int gameOver = GAME_ON;
 
+    Sound sndCheckmate;
+    Sound sndStalemate;
+
+    SunButton btnBack;
 
     public ScreenGame(Main main) {
+        this.main = main;
+        touch = main.touch;
         batch = main.batch;
         camera = main.camera;
         font70 = main.font70white;
-        font50 = main.font50white;
 
         imgBackGround = new Texture("space3.png");
 
@@ -43,6 +55,10 @@ public class ScreenGame implements Screen {
 
         loadTextures();
 
+        sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
+        sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
+
+        btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
         board.initializeBoard();
     }
@@ -51,25 +67,34 @@ public class ScreenGame implements Screen {
 
     @Override
     public void render(float delta) {
+        //касания
+        touch.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+        camera.unproject(touch);
+        if(Gdx.input.justTouched()) {
+            if (btnBack.hit(touch)) {
+                main.setScreen(main.screenMenu);
+            }
+        }
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
+        // отрисовка
+        batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        // Отрисовка доски
+        btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
         drawBoard();
-
-        // Отрисовка фигур
         drawPieces();
-
-        // Отрисовка выделения
         if (selectedPiece != null) {
             drawSelection();
         }
+        if(gameOver == CHECKMATE){
+            font70.draw(batch, "Checkmate", 0, 1400, SCR_WIDTH, Align.center, true);
+        }
+        if (gameOver == STALEMATE){
+            font70.draw(batch, "Stalemate", 0, 1400, SCR_WIDTH, Align.center, true);
+        }
         batch.end();
-        // Обработка ввода
         handleInput();
-
     }
-
     @Override
     public void resize(int width, int height) {}
 
@@ -92,7 +117,6 @@ public class ScreenGame implements Screen {
     }
 
     private void loadTextures() {
-        // Загрузка текстур плиток
         lightTile = new Texture(Gdx.files.internal("cellwhite.png"));
         darkTile = new Texture(Gdx.files.internal("cellblack.png"));
 
@@ -115,8 +139,6 @@ public class ScreenGame implements Screen {
         blackPieces[5] = new Texture(Gdx.files.internal("pieces/chess_king_b.png")); // король
     }
     private void drawSelection() {
-        // Здесь можно добавить эффект выделения выбранной фигуры
-        // Например, отрисовку полупрозрачного прямоугольника
         batch.setColor(1, 1, 0, 0.5f);
         batch.draw(lightTile, boardOffsetX + selectedX * tileSize, boardOffsetY + selectedY * tileSize, tileSize, tileSize);
         batch.setColor(1, 1, 1, 1);
@@ -163,6 +185,8 @@ public class ScreenGame implements Screen {
         return null;
     }
     private void handleInput() {
+        if (gameOver == CHECKMATE || gameOver == STALEMATE) return;
+
         if (Gdx.input.justTouched()) {
             Vector3 touchPos = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
@@ -174,20 +198,40 @@ public class ScreenGame implements Screen {
                 if (selectedPiece == null) {
                     // Выбор фигуры
                     selectedPiece = board.getPiece(x, y);
-                    if (selectedPiece != null) {
+                    if (selectedPiece != null && selectedPiece.getColor() == currentPlayer) {
                         selectedX = x;
                         selectedY = y;
+                    } else {
+                        selectedPiece = null;
                     }
                 } else {
-                    // Попытка хода
-                    if (board.isValidMove(selectedX, selectedY, x, y, selectedPiece.getColor())) {
-                        board.movePiece(selectedX, selectedY, x, y);
+                    if (board.isValidMove(selectedX, selectedY, x, y, currentPlayer)) {
+                        // Проверяем, убирает ли ход шах (если он есть)
+                        if (!board.wouldLeaveKingInCheck(selectedX, selectedY, x, y, currentPlayer)) {
+                            board.movePiece(selectedX, selectedY, x, y);
+                            checkGameEndConditions();
+                            switchPlayer();
+                        }
                     }
                     selectedPiece = null;
                     selectedX = -1;
                     selectedY = -1;
                 }
             }
+        }
+    }
+    private void switchPlayer() {
+        currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+    }
+    private void checkGameEndConditions () {
+        PieceColor opponent = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+
+        if (board.isCheckmate(opponent)) {
+            if (isSoundOn) {sndCheckmate.play();}
+            gameOver = CHECKMATE;
+        } else if (board.isStalemate(opponent)) {
+            if (isSoundOn) {sndStalemate.play();}
+            gameOver = STALEMATE;
         }
     }
 }
