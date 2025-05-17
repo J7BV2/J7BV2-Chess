@@ -59,7 +59,7 @@ public class ScreenGame implements Screen {
         camera = main.camera;
         font70 = main.font70white;
 
-        imgBackGround = new Texture("space3.png");
+        imgBackGround = new Texture("chess8.png");
 
         tileSize = (int) (SCR_WIDTH / 8);
         boardOffsetX = 0;
@@ -75,7 +75,8 @@ public class ScreenGame implements Screen {
         btnEnemy = new SunButton(main.player.enemy,font70, 500, 1450);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
-        board.initializeBoard();
+        if (variants == CLASSIC) {board.initializeBoard();}
+        if (variants == CHESS960){board.initializeFisherBoard();}
     }
     @Override
     public void show() {}
@@ -180,7 +181,7 @@ public class ScreenGame implements Screen {
                 if (piece != null) {
                     Texture texture = getPieceTexture(piece);
 
-                    // Рассчитываем координаты отрисовки
+                    // Расчет координаты отрисовки
                     float drawX = boardOffsetX + x * tileSize;
                     float drawY = boardOffsetY + y * tileSize;
 
@@ -236,7 +237,6 @@ public class ScreenGame implements Screen {
 
             if (x >= 0 && x < 8 && y >= 0 && y < 8) {
                 if (selectedPiece == null) {
-                    // Выбор фигуры
                     selectedPiece = board.getPiece(x, y);
                     if (selectedPiece != null && selectedPiece.getColor() == currentPlayer) {
                         selectedX = x;
@@ -246,7 +246,7 @@ public class ScreenGame implements Screen {
                     }
                 } else {
                     if (board.isValidMove(selectedX, selectedY, x, y, currentPlayer)) {
-                        // Проверяем, убирает ли ход шах (если он есть)
+                        // Проверка, убирает ли ход шах (если он есть)
                         if (!board.wouldLeaveKingInCheck(selectedX, selectedY, x, y, currentPlayer)) {
                             board.movePiece(selectedX, selectedY, x, y);
                             checkGameEndConditions();
@@ -268,7 +268,7 @@ public class ScreenGame implements Screen {
     private void checkGameEndConditions () {
         isWhiteTurn = !isWhiteTurn;
         currentPlayer = isWhiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
-        timeElapsed = 0; // Сброс счетчика секунд
+        timeElapsed = 0; // Сброс сетчика
         PieceColor opponent = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
 
 
@@ -285,7 +285,7 @@ public class ScreenGame implements Screen {
 
         timeElapsed += Gdx.graphics.getDeltaTime();
 
-        if (timeElapsed >= 1.0f) { // Каждую секунду
+        if (timeElapsed >= 1.0f) {
             timeElapsed = 0;
 
             if (isWhiteTurn) {
@@ -307,11 +307,11 @@ public class ScreenGame implements Screen {
         String whiteTimeStr = formatTime(whiteTime);
         String blackTimeStr = formatTime(blackTime);
 
-        // Верхний таймер (белые)
+        // таймер (черные)
         font70.draw(batch, blackTimeStr,
             Gdx.graphics.getWidth()/2 - 50, timerYPositionTop);
 
-        // Нижний таймер (черные)
+        // Таймер (белые)
         font70.draw(batch, whiteTimeStr,
             Gdx.graphics.getWidth()/2 - 50, timerYPositionBottom);
     }

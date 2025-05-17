@@ -3,6 +3,7 @@ package ru.Chess;
 import static ru.Chess.Main.*;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -41,8 +42,9 @@ public class ScreenGameSettings implements Screen {
         font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 
-        imgBackGround = new Texture("space3.png");
+        imgBackGround = new Texture("chess2.png");
 
+        loadSettings();
         btnVariant = new SunButton("Variant", font70white, 100, 1200);
         btnClassic = new SunButton("Classic", font70white, 200, 1100);
         btnChess960 = new SunButton("Chess960", font70white, 200, 1000);
@@ -116,12 +118,23 @@ public class ScreenGameSettings implements Screen {
     public void resume() {}
 
     @Override
-    public void hide() {}
+    public void hide() {saveSettings();}
     @Override
     public void dispose() {}
 
     private void setFontColorByVariants(){
         btnClassic.setFont(variants == CLASSIC ? font70white : font70gray);
         btnChess960.setFont(variants == CHESS960 ? font70white : font70gray);
+    }
+    private void saveSettings(){
+        Preferences prefs = Gdx.app.getPreferences("ChessSettings");
+        prefs.putString("enemy", main.player.enemy);
+        prefs.putInteger("variants", CLASSIC);
+        prefs.flush();
+    }
+    private void loadSettings(){
+        Preferences prefs = Gdx.app.getPreferences("SpaceWarSettings");
+        main.player.enemy = prefs.getString("enemy", "Opponent");
+        variants = prefs.getInteger("variants", CLASSIC);
     }
 }

@@ -36,7 +36,7 @@ public class ScreenGlobalSettings implements Screen {
         font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 
-        imgBackGround = new Texture("space3.png");
+        imgBackGround = new Texture("chess3.png");
 
         loadSettings();
         btnName = new SunButton("Name: "+main.player.name, font70white, 100, 1200);

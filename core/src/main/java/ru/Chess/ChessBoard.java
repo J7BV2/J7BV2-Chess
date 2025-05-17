@@ -5,6 +5,9 @@ import static ru.Chess.Main.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class ChessBoard {
     private Piece[][] board;
     private boolean whiteKingMoved = false;
@@ -84,7 +87,7 @@ public class ChessBoard {
         if (target != null && target.getColor() == color) {
             return false;
         }
-        // Получаем разницу координат
+        // Получение разницы координат
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
 
@@ -207,18 +210,18 @@ public class ChessBoard {
         return true;
     }
     public boolean wouldLeaveKingInCheck(int fromX, int fromY, int toX, int toY, PieceColor color) {
-        // Сохраняем текущее состояние
+        // Сохранение текущего состояния
         Piece originalFrom = getPiece(fromX, fromY);
         Piece originalTo = getPiece(toX, toY);
 
-        // Делаем временный ход
+        // Временный ход
         board[toX][toY] = originalFrom;
         board[fromX][fromY] = null;
 
-        // Проверяем, остался ли король под шахом
+        // Проверка, остался ли король под шахом
         boolean inCheck = isInCheck(color);
 
-        // Отменяем временный ход
+        // Отмена временного хода
         board[fromX][fromY] = originalFrom;
         board[toX][toY] = originalTo;
 
@@ -226,7 +229,7 @@ public class ChessBoard {
     }
 
     public boolean isInCheck(PieceColor color) {
-        // Находим позицию короля
+        // позиция короля
         int kingX = -1, kingY = -1;
         outerloop:
         for (int y = 0; y < 8; y++) {
@@ -240,7 +243,7 @@ public class ChessBoard {
                 }
             }
         }
-        // Проверяем, есть ли атака на короля
+        // Проверка, есть ли атака на короля
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 Piece piece = getPiece(x, y);
@@ -279,7 +282,7 @@ public class ChessBoard {
             return false;
         }
 
-        // Получаем разницу координат
+        // Разница координат
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
 
@@ -351,7 +354,7 @@ public class ChessBoard {
         if (deltaX == 2 && deltaY == 0 && fromY == toY &&
             (fromY == 0 || fromY == 7)) {
 
-            // Проверяем, не двигались ли король и ладья
+            // Проверка, не двигались ли король и ладья
             boolean kingMoved = (color == PieceColor.BLACK) ? whiteKingMoved : blackKingMoved;
             if (kingMoved) return false;
 
@@ -365,7 +368,7 @@ public class ChessBoard {
                 boolean rookMoved = (color == PieceColor.BLACK) ? whiteRooksMoved[1] : blackRooksMoved[1];
                 if (rookMoved) return false;
 
-                // Проверяем, свободны ли клетки между королем и ладьей
+                // Проверка, свободны ли клетки между королем и ладьей
                 return getPiece(5, fromY) == null && getPiece(6, fromY) == null;
             }
             // Длинная рокировка (a-side)
@@ -378,7 +381,7 @@ public class ChessBoard {
                 boolean rookMoved = (color == PieceColor.BLACK) ? whiteRooksMoved[0] : blackRooksMoved[0];
                 if (rookMoved) return false;
 
-                // Проверяем, свободны ли клетки между королем и ладьей
+                // Проверка, свободны ли клетки между королем и ладьей
                 return getPiece(1, fromY) == null && getPiece(2, fromY) == null &&
                     getPiece(3, fromY) == null;
             }
@@ -389,7 +392,7 @@ public class ChessBoard {
     public boolean isCheckmate(PieceColor color) {
         if (!isInCheck(color)) return false;
 
-        // Проверяем все возможные ходы, чтобы убедиться, что нет выхода из шаха
+        // Проверка все возможные ходы, чтобы убедиться, что нет выхода из шаха
         for (int fromY = 0; fromY < 8; fromY++) {
             for (int fromX = 0; fromX < 8; fromX++) {
                 Piece piece = getPiece(fromX, fromY);
@@ -412,7 +415,7 @@ public class ChessBoard {
     public boolean isStalemate(PieceColor color) {
         if (isInCheck(color)) return false;
 
-        // Проверяем, есть ли у игрока допустимые ходы
+        // Проверка, есть ли у игрока допустимые ходы
         for (int fromY = 0; fromY < 8; fromY++) {
             for (int fromX = 0; fromX < 8; fromX++) {
                 Piece piece = getPiece(fromX, fromY);
@@ -431,5 +434,84 @@ public class ChessBoard {
         }
 
         return true;
+    }
+
+
+    public void initializeFisherBoard() {
+        // Очищаем доску
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = null;
+            }
+        }
+
+        // Расстановка пешек
+        for (int x = 0; x < 8; x++) {
+            board[x][1] = new Piece(PieceType.PAWN, PieceColor.BLACK);
+            board[x][6] = new Piece(PieceType.PAWN, PieceColor.WHITE);
+        }
+
+        // Создаем массив фигур для расстановки
+        ArrayList<PieceType> pieces = new ArrayList<>();
+        pieces.add(PieceType.ROOK);
+        pieces.add(PieceType.KNIGHT);
+        pieces.add(PieceType.BISHOP);
+        pieces.add(PieceType.QUEEN);
+        pieces.add(PieceType.KING);
+        pieces.add(PieceType.BISHOP);
+        pieces.add(PieceType.KNIGHT);
+        pieces.add(PieceType.ROOK);
+
+        // Перемешиваем фигуры (кроме короля)
+        Collections.shuffle(pieces.subList(1, pieces.size()-1));
+
+        // Убедимся, что король между ладьями (правило Фишера)
+        int kingPos = pieces.indexOf(PieceType.KING);
+        if (kingPos < 1 || kingPos > 6) {
+            // Если король оказался на краю, переставляем его ближе к центру
+            pieces.set(kingPos, pieces.get(4));
+            pieces.set(4, PieceType.KING);
+        }
+
+        // Расставляем черные фигуры случайным образом
+        for (int x = 0; x < 8; x++) {
+            board[x][0] = new Piece(pieces.get(x), PieceColor.BLACK);
+        }
+
+        // Расставляем белые фигуры (зеркально черным)
+        for (int x = 0; x < 8; x++) {
+            board[x][7] = new Piece(pieces.get(x), PieceColor.WHITE);
+        }
+
+        // Проверяем правильность слонов (должны быть на разных цветах)
+        fixBishopsPositions();
+    }
+
+
+    private void fixBishopsPositions() {
+        // Проверяем черных слонов
+        int blackBishop1X = -1, blackBishop2X = -1;
+        for (int x = 0; x < 8; x++) {
+            if (board[x][0] != null && board[x][0].getType() == PieceType.BISHOP) {
+                if (blackBishop1X == -1) blackBishop1X = x;
+                else blackBishop2X = x;
+            }
+        }
+
+        // Если слоны на клетках одного цвета
+        if ((blackBishop1X + blackBishop2X) % 2 == 0) {
+            // Находим не слоновую фигуру для замены
+            for (int x = 0; x < 8; x++) {
+                if (board[x][0] != null &&
+                    board[x][0].getType() != PieceType.BISHOP &&
+                    board[x][0].getType() != PieceType.KING) {
+                    // Меняем местами с одним из слонов
+                    Piece temp = board[x][0];
+                    board[x][0] = board[blackBishop2X][0];
+                    board[blackBishop2X][0] = temp;
+                    break;
+                }
+            }
+        }
     }
 }

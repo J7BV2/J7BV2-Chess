@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Align;
 
 public class ScreenMenu implements Screen {
     private SpriteBatch batch;
@@ -30,7 +31,7 @@ public class ScreenMenu implements Screen {
         touch = main.touch;
         font = main.font70white;
 
-        imgBackGround = new Texture("space1.png");
+        imgBackGround = new Texture("chess1.png");
 
         btnPlay = new SunButton("Play", font, 200, 900);
         btnSettings = new SunButton("Settings", font, 200, 800);
@@ -68,6 +69,7 @@ public class ScreenMenu implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
+        font.draw(batch, "Chess", 0, 1500, SCR_WIDTH, Align.center, true);
         btnPlay.font.draw(batch, btnPlay.text, btnPlay.x, btnPlay.y);
         btnSettings.font.draw(batch, btnSettings.text, btnSettings.x, btnSettings.y);
         btnAbout.font.draw(batch, btnAbout.text, btnAbout.x, btnAbout.y);
