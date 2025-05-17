@@ -64,7 +64,7 @@ public class ScreenGlobalSettings implements Screen {
                     keyboard.start();
                 }
                 if (btnSound.hit(touch)) {
-                    isSoundOn = false;
+                    isSoundOn = !isSoundOn;
                     btnSound.setText(isSoundOn ? "Sound ON" : "Sound OFF");
                 }
                 if (btnBack.hit(touch)) {
@@ -105,7 +105,7 @@ public class ScreenGlobalSettings implements Screen {
         prefs.flush();
     }
 
-    private void loadSettings(){
+    public void loadSettings(){
         Preferences prefs = Gdx.app.getPreferences("ChessSettings");
         main.player.name = prefs.getString("name", "Noname");
         isSoundOn = prefs.getBoolean("sound", true);

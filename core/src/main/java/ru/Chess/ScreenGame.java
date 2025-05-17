@@ -3,6 +3,7 @@ package ru.Chess;
 import static ru.Chess.Main.*;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,7 +14,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenGame implements Screen {
-    private static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2;
+    private static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER =3;
     private SpriteBatch batch;
     private Vector3 touch;
     private OrthographicCamera camera;
@@ -23,6 +24,14 @@ public class ScreenGame implements Screen {
     private Texture[] blackPieces;
     private Texture lightTile, darkTile;
     private Main main;
+
+    private float whiteTime = Timer;
+    private float blackTime = Timer;
+    private float timeElapsed = 0;
+    private boolean isWhiteTurn = true;
+
+    private int timerYPositionTop = 1500 - 50; // Верхний таймер
+    private int timerYPositionBottom = 250;     // Нижний таймер
 
     private Texture imgBackGround;
 
@@ -38,6 +47,8 @@ public class ScreenGame implements Screen {
     Sound sndCheckmate;
     Sound sndStalemate;
 
+    SunButton btnEnemy;
+    SunButton btnName;
     SunButton btnBack;
 
     public ScreenGame(Main main) {
@@ -58,6 +69,9 @@ public class ScreenGame implements Screen {
         sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
 
+        loadSettings();
+        btnName = new SunButton(main.player.name,font70, 500, 250);
+        btnEnemy = new SunButton(main.player.enemy,font70, 500, 1450);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
         board.initializeBoard();
@@ -83,8 +97,15 @@ public class ScreenGame implements Screen {
         btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
         drawBoard();
         drawPieces();
+        updateTimers();
+        drawTimers();
+        btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
+        btnEnemy.font.draw(batch,btnEnemy.text, btnEnemy.x, btnEnemy.y);
         if (selectedPiece != null) {
             drawSelection();
+        }
+        if(gameOver == TIME_IS_OVER){
+            font70.draw(batch, "Time is over", 0, 1400, SCR_WIDTH, Align.center, true);
         }
         if(gameOver == CHECKMATE){
             font70.draw(batch, "Checkmate", 0, 1400, SCR_WIDTH, Align.center, true);
@@ -221,10 +242,14 @@ public class ScreenGame implements Screen {
         }
     }
     private void switchPlayer() {
-        currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.WHITE : PieceColor.BLACK;
     }
     private void checkGameEndConditions () {
+        isWhiteTurn = !isWhiteTurn;
+        currentPlayer = isWhiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
+        timeElapsed = 0; // Сброс счетчика секунд
         PieceColor opponent = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+
 
         if (board.isCheckmate(opponent)) {
             if (isSoundOn) {sndCheckmate.play();}
@@ -233,6 +258,51 @@ public class ScreenGame implements Screen {
             if (isSoundOn) {sndStalemate.play();}
             gameOver = STALEMATE;
         }
+    }
+    private void updateTimers() {
+        if (gameOver == CHECKMATE || gameOver == STALEMATE) return;
+
+        timeElapsed += Gdx.graphics.getDeltaTime();
+
+        if (timeElapsed >= 1.0f) { // Каждую секунду
+            timeElapsed = 0;
+
+            if (isWhiteTurn) {
+                whiteTime--;
+            } else {
+                blackTime--;
+            }
+
+            // Проверка на окончание времени
+            if (whiteTime <= 0 || blackTime <= 0) {
+                gameOver = TIME_IS_OVER;
+                if (isSoundOn) {
+                    sndCheckmate.play();
+                }
+            }
+        }
+    }
+    private void drawTimers() {
+        String whiteTimeStr = formatTime(whiteTime);
+        String blackTimeStr = formatTime(blackTime);
+
+        // Верхний таймер (белые)
+        font70.draw(batch, blackTimeStr,
+            Gdx.graphics.getWidth()/2 - 50, timerYPositionTop);
+
+        // Нижний таймер (черные)
+        font70.draw(batch, whiteTimeStr,
+            Gdx.graphics.getWidth()/2 - 50, timerYPositionBottom);
+    }
+
+    private String formatTime(float seconds) {
+        int minutes = (int)(seconds / 60);
+        int secs = (int)(seconds % 60);
+        return String.format("%02d:%02d", minutes, secs);
+    }
+    public void loadSettings() {
+        Preferences prefs = Gdx.app.getPreferences("ChessSettings");
+        main.player.name = prefs.getString("name", "Noname");
     }
 }
 
