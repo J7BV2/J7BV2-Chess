@@ -43,6 +43,7 @@ public class ScreenGame implements Screen {
 
     private PieceColor currentPlayer = PieceColor.WHITE;
     private int gameOver = GAME_ON;
+    private boolean isBoardFlipped = false;
 
     Sound sndCheckmate;
     Sound sndStalemate;
@@ -178,7 +179,25 @@ public class ScreenGame implements Screen {
                 Piece piece = board.getPiece(x, y);
                 if (piece != null) {
                     Texture texture = getPieceTexture(piece);
-                    batch.draw(texture, boardOffsetX + x * tileSize, boardOffsetY + y * tileSize, tileSize, tileSize);
+
+                    // Рассчитываем координаты отрисовки
+                    float drawX = boardOffsetX + x * tileSize;
+                    float drawY = boardOffsetY + y * tileSize;
+
+                    // Параметры переворота
+                    float scaleX = isBoardFlipped ? -1 : 1;
+                    float originX = tileSize / 2f;  // Центр фигуры по X
+                    float originY = tileSize / 2f; // Центр фигуры по Y
+
+                    batch.draw(texture,
+                        drawX, drawY,
+                        originX, originY,
+                        tileSize, tileSize,
+                        1, 1,              // Без масштабирования
+                        isBoardFlipped ? 180 : 0, // Только вращение
+                        0, 0,
+                        texture.getWidth(), texture.getHeight(),
+                        false, false);
                 }
             }
         }
@@ -242,7 +261,9 @@ public class ScreenGame implements Screen {
         }
     }
     private void switchPlayer() {
+        isBoardFlipped = !isBoardFlipped;
         currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.WHITE : PieceColor.BLACK;
+        timeElapsed = 0;
     }
     private void checkGameEndConditions () {
         isWhiteTurn = !isWhiteTurn;
