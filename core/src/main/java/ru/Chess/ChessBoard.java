@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class ChessBoard {
-    private Piece[][] board;
+    public Piece[][] board;
     private boolean whiteKingMoved = false;
     private boolean[] whiteRooksMoved = {false, false}; // [a-side, h-side]
     private boolean blackKingMoved = false;

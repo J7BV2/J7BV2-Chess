@@ -25,8 +25,8 @@ public class ScreenGame implements Screen {
     private Texture lightTile, darkTile;
     private Main main;
 
-    private float whiteTime = Timer;
-    private float blackTime = Timer;
+    private float whiteTime = timer;
+    private float blackTime = timer;
     private float timeElapsed = 0;
     private boolean isWhiteTurn = true;
 
@@ -69,17 +69,18 @@ public class ScreenGame implements Screen {
 
         sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
-
-        loadSettings();
-        btnName = new SunButton(main.player.name,font70, 520, 250);
-        btnEnemy = new SunButton(main.player.enemy,font70, 520, 1450);
+        btnName = new SunButton(main.player.name, font70, 520, 250);
+        btnEnemy = new SunButton(main.player.enemy, font70, 520, 1450);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
-        if (variants == CLASSIC) {board.initializeBoard();}
-        if (variants == CHESS960){board.initializeFisherBoard();}
     }
     @Override
-    public void show() {}
+    public void show() {
+        if (variants == CLASSIC) {board.initializeBoard();}
+        if (variants == CHESS960){board.initializeFisherBoard();}
+        whiteTime = timer;
+        blackTime = timer;
+    }
 
     @Override
     public void render(float delta) {
@@ -89,6 +90,11 @@ public class ScreenGame implements Screen {
         if(Gdx.input.justTouched()) {
             if (btnBack.hit(touch)) {
                 main.setScreen(main.screenMenu);
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        board.board[i][j] = null;
+                    }
+                }
             }
         }
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
@@ -96,24 +102,24 @@ public class ScreenGame implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
+        font70.draw(batch, main.player.enemy, 520, 1500, SCR_WIDTH, Align.right, true);
         drawBoard();
         drawPieces();
         updateTimers();
         drawTimers();
         btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
-        btnEnemy.font.draw(batch,btnEnemy.text, btnEnemy.x, btnEnemy.y);
+        btnEnemy.font.draw(batch, btnEnemy.text, btnEnemy.x, btnEnemy.y);
         if (selectedPiece != null) {
             drawSelection();
         }
         if(gameOver == TIME_IS_OVER){
-            font70.draw(batch, "Time is over", 0, 1400, SCR_WIDTH, Align.center, true);
+            font70.draw(batch, "Time is over", 0, 1400, SCR_WIDTH, Align.center, false);
         }
         if(gameOver == CHECKMATE){
-            font70.draw(batch, "Checkmate", 0, 1400, SCR_WIDTH, Align.center, true);
+            font70.draw(batch, "Checkmate", 0, 1400, SCR_WIDTH, Align.center, false);
         }
         if (gameOver == STALEMATE){
-            font70.draw(batch, "Stalemate", 0, 1400, SCR_WIDTH, Align.center, true);
+            font70.draw(batch, "Stalemate", 0, 1400, SCR_WIDTH, Align.center, false);
         }
         batch.end();
         handleInput();

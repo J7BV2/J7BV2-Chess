@@ -20,8 +20,7 @@ public class ScreenGameSettings implements Screen {
     private BitmapFont font50white;
     private InputKeyboard keyboard;
     private Main main;
-    public String Time = "3 minutes";
-
+    public String time = timer/60+ " minutes";
     Texture imgBackGround;
 
     SunButton btnVariant;
@@ -44,18 +43,19 @@ public class ScreenGameSettings implements Screen {
 
         imgBackGround = new Texture("chess2.png");
 
-        loadSettings();
         btnVariant = new SunButton("Variant", font70white, 100, 1200);
         btnClassic = new SunButton("Classic", font70white, 200, 1100);
         btnChess960 = new SunButton("Chess960", font70white, 200, 1000);
         setFontColorByVariants();
-        btnTimer = new SunButton("Timer: "+Time, font70white, 100, 850);
+        btnTimer = new SunButton("Timer: "+ time, font70white, 100, 850);
         btnEnemy = new SunButton("Enemy: "+main.player.enemy, font70white, 100, 750);
         btnPlay = new SunButton ("Play", font70white, 350);
         btnBack = new SunButton("Back", font70white, 150);
     }
     @Override
-    public void show() {Gdx.graphics.setForegroundFPS(10);}
+    public void show() {
+        Gdx.graphics.setForegroundFPS(10);
+    }
 
     @Override
     public void render(float delta) {
@@ -81,9 +81,13 @@ public class ScreenGameSettings implements Screen {
                     setFontColorByVariants();
                 }
                 if (btnTimer.hit(touch)) {
-                    Timer = FIVE_MIN;
-                    Time = "5 minutes";
-                    btnTimer.setText("Timer: "+Time);
+                    if(timer == ONE_MIN) timer = THREE_MIN;
+                    else if(timer == THREE_MIN) timer = FIVE_MIN;
+                    else if(timer == FIVE_MIN) timer = TEN_MIN;
+                    else if(timer == TEN_MIN) timer = THIRTY_MIN;
+                    else if(timer == THIRTY_MIN) timer = ONE_MIN;
+                    time = timer /60+" minutes";
+                    btnTimer.setText("Timer: "+ time);
                 }
                 if (btnPlay.hit(touch)) {
                     main.setScreen(main.screenGame);
@@ -118,23 +122,12 @@ public class ScreenGameSettings implements Screen {
     public void resume() {}
 
     @Override
-    public void hide() {saveSettings();}
+    public void hide() {}
     @Override
     public void dispose() {}
 
     private void setFontColorByVariants(){
         btnClassic.setFont(variants == CLASSIC ? font70white : font70gray);
         btnChess960.setFont(variants == CHESS960 ? font70white : font70gray);
-    }
-    private void saveSettings(){
-        Preferences prefs = Gdx.app.getPreferences("ChessSettings");
-        prefs.putString("enemy", main.player.enemy);
-        prefs.putInteger("variants", CLASSIC);
-        prefs.flush();
-    }
-    private void loadSettings(){
-        Preferences prefs = Gdx.app.getPreferences("SpaceWarSettings");
-        main.player.enemy = prefs.getString("enemy", "Opponent");
-        variants = prefs.getInteger("variants", CLASSIC);
     }
 }

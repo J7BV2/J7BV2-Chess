@@ -1,6 +1,5 @@
 package ru.Chess;
 
-import ru.Chess.Player.*;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -12,11 +11,11 @@ import com.badlogic.gdx.math.Vector3;
 public class Main extends Game {
     public static final float SCR_WIDTH = 896;
     public static final float SCR_HEIGHT = 1600;
-    public static int THREE_MIN = 180, FIVE_MIN = 300;
+    public static int THREE_MIN = 180, FIVE_MIN = 300, ONE_MIN =60, TEN_MIN= 600, THIRTY_MIN = 1800;
     public static final int CLASSIC = 0, CHESS960 = 1;
     public static int variants = CLASSIC;
     public static boolean isSoundOn = true;
-    public static int Timer = THREE_MIN;
+    public static int timer = ONE_MIN;
 
     public SpriteBatch batch;
     public OrthographicCamera camera;
