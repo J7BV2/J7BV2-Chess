@@ -48,7 +48,6 @@ public class ScreenGame implements Screen {
     Sound sndCheckmate;
     Sound sndStalemate;
 
-    SunButton btnEnemy;
     SunButton btnName;
     SunButton btnBack;
 
@@ -70,7 +69,6 @@ public class ScreenGame implements Screen {
         sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
         btnName = new SunButton(main.player.name, font70, 520, 250);
-        btnEnemy = new SunButton(main.player.enemy, font70, 520, 1450);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
     }
@@ -108,7 +106,7 @@ public class ScreenGame implements Screen {
         updateTimers();
         drawTimers();
         btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
-        btnEnemy.font.draw(batch, btnEnemy.text, btnEnemy.x, btnEnemy.y);
+        font70.draw(batch, main.player.enemy, 520, 1450);
         if (selectedPiece != null) {
             drawSelection();
         }
