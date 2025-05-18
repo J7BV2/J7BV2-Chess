@@ -71,8 +71,8 @@ public class ScreenGame implements Screen {
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
 
         loadSettings();
-        btnName = new SunButton(main.player.name,font70, 500, 250);
-        btnEnemy = new SunButton(main.player.enemy,font70, 500, 1450);
+        btnName = new SunButton(main.player.name,font70, 520, 250);
+        btnEnemy = new SunButton(main.player.enemy,font70, 520, 1450);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
         if (variants == CLASSIC) {board.initializeBoard();}
