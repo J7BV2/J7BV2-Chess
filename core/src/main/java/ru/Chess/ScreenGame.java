@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenGame implements Screen {
-    private static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER =3;
     private SpriteBatch batch;
     private Vector3 touch;
     private OrthographicCamera camera;
@@ -24,6 +23,9 @@ public class ScreenGame implements Screen {
     private Texture[] blackPieces;
     private Texture lightTile, darkTile;
     private Main main;
+
+    public static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER =3;
+    public static int gameOver = GAME_ON;
 
     private float whiteTime = timer;
     private float blackTime = timer;
@@ -42,10 +44,13 @@ public class ScreenGame implements Screen {
     private int selectedX = -1, selectedY = -1;
 
     private PieceColor currentPlayer = PieceColor.WHITE;
-    private int gameOver = GAME_ON;
     private boolean isBoardFlipped = false;
 
+    private String textForCheckmate;
+    private String textForStalemate;
+
     Sound sndCheckmate;
+    Sound sndCheck;
     Sound sndStalemate;
 
     SunButton btnName;
@@ -66,8 +71,10 @@ public class ScreenGame implements Screen {
 
         loadTextures();
 
+
         sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
+        sndCheck = Gdx.audio.newSound(Gdx.files.internal("check.mp3"));
         btnName = new SunButton(main.player.name, font70, 520, 250);
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
@@ -88,6 +95,8 @@ public class ScreenGame implements Screen {
         if(Gdx.input.justTouched()) {
             if (btnBack.hit(touch)) {
                 main.setScreen(main.screenMenu);
+                if (currentPlayer == PieceColor.BLACK) switchPlayer();
+                gameOver = GAME_ON;
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         board.board[i][j] = null;
@@ -105,19 +114,20 @@ public class ScreenGame implements Screen {
         drawPieces();
         updateTimers();
         drawTimers();
+        btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
         btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
         font70.draw(batch, main.player.enemy, 520, 1450);
-        if (selectedPiece != null) {
-            drawSelection();
-        }
         if(gameOver == TIME_IS_OVER){
-            font70.draw(batch, "Time is over", 0, 1400, SCR_WIDTH, Align.center, false);
+            font70.draw(batch, "Time is over", 0, 1550, SCR_WIDTH, Align.center, false);
         }
         if(gameOver == CHECKMATE){
-            font70.draw(batch, "Checkmate", 0, 1400, SCR_WIDTH, Align.center, false);
+            font70.draw(batch, textForCheckmate, 0, 1550, SCR_WIDTH, Align.center, false);
         }
         if (gameOver == STALEMATE){
-            font70.draw(batch, "Stalemate", 0, 1400, SCR_WIDTH, Align.center, false);
+            font70.draw(batch, textForStalemate, 0, 1550, SCR_WIDTH, Align.center, false);
+        }
+        if (selectedPiece != null) {
+            drawSelection();
         }
         batch.end();
         handleInput();
@@ -193,7 +203,6 @@ public class ScreenGame implements Screen {
                     float scaleX = isBoardFlipped ? -1 : 1;
                     float originX = tileSize / 2f;  // Центр фигуры по X
                     float originY = tileSize / 2f; // Центр фигуры по Y
-
                     batch.draw(texture,
                         drawX, drawY,
                         originX, originY,
@@ -268,21 +277,12 @@ public class ScreenGame implements Screen {
         isBoardFlipped = !isBoardFlipped;
         currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.WHITE : PieceColor.BLACK;
         timeElapsed = 0;
+        if (gameOver == GAME_ON) checkAndDisplayGameResult();
     }
     private void checkGameEndConditions () {
         isWhiteTurn = !isWhiteTurn;
         currentPlayer = isWhiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
         timeElapsed = 0; // Сброс сетчика
-        PieceColor opponent = (currentPlayer == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
-
-
-        if (board.isCheckmate(opponent)) {
-            if (isSoundOn) {sndCheckmate.play();}
-            gameOver = CHECKMATE;
-        } else if (board.isStalemate(opponent)) {
-            if (isSoundOn) {sndStalemate.play();}
-            gameOver = STALEMATE;
-        }
     }
     private void updateTimers() {
         if (gameOver == CHECKMATE || gameOver == STALEMATE) return;
@@ -301,9 +301,6 @@ public class ScreenGame implements Screen {
             // Проверка на окончание времени
             if (whiteTime <= 0 || blackTime <= 0) {
                 gameOver = TIME_IS_OVER;
-                if (isSoundOn) {
-                    sndCheckmate.play();
-                }
             }
         }
     }
@@ -325,10 +322,18 @@ public class ScreenGame implements Screen {
         int secs = (int)(seconds % 60);
         return String.format("%02d:%02d", minutes, secs);
     }
-    public void loadSettings() {
-        Preferences prefs = Gdx.app.getPreferences("ChessSettings");
-        main.player.name = prefs.getString("name", "Noname");
+    private void checkAndDisplayGameResult() {
+        if (board.isInCheck(currentPlayer) && !board.isCheckmate(currentPlayer)) {
+            if (isSoundOn) sndCheck.play();
+        } else if (board.isCheckmate(currentPlayer)) {
+                textForCheckmate = (currentPlayer == PieceColor.WHITE ? "White" : "Black") + " wins";
+                gameOver = CHECKMATE;
+                if (isSoundOn) sndCheckmate.play();
+
+        } else if (board.isStalemate(currentPlayer)) {
+            textForStalemate = "Stalemate";
+            gameOver = STALEMATE;
+            if (isSoundOn) sndStalemate.play();
+        }
     }
 }
-
-

@@ -16,13 +16,12 @@ public class ChessBoard {
     private boolean[] blackRooksMoved = {false, false};
     private int[] enPassantTarget = null; // [x, y] координаты клетки для взятия на проходе
 
+
     Sound sndPieceMove;
-    Sound sndCheck;
 
     public ChessBoard() {
         board = new Piece[8][8];
         sndPieceMove = Gdx.audio.newSound(Gdx.files.internal("piecemove.mp3"));
-        sndCheck = Gdx.audio.newSound(Gdx.files.internal("check.mp3"));
     }
 
     public void initializeBoard() {
@@ -65,6 +64,7 @@ public class ChessBoard {
         board[toX][toY] = board[fromX][fromY];
         board[fromX][fromY] = null;
     }
+
 
     public boolean isValidMove(int fromX, int fromY, int toX, int toY, PieceColor color) {
         // Проверка на выход за пределы доски
@@ -209,6 +209,105 @@ public class ChessBoard {
 
         return true;
     }
+
+    public boolean isInCheck(PieceColor color) {
+        // Находим позицию короля
+        int kingX = -1, kingY = -1;
+        outerloop:
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Piece piece = getPiece(x, y);
+                if (piece != null && piece.getType() == PieceType.KING &&
+                    piece.getColor() == color) {
+                    kingX = x;
+                    kingY = y;
+                    break outerloop;
+                }
+            }
+        }
+
+        // Проверяем, есть ли атака на короля
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                Piece piece = getPiece(x, y);
+                if (piece != null && piece.getColor() != color) {
+                    if (isValidMoveWithoutCheck(x, y, kingX, kingY, piece.getColor())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isCheckmate(PieceColor color) {
+        if (!isInCheck(color)) return false;
+
+        // Проверяем все возможные ходы
+        for (int fromY = 0; fromY < 8; fromY++) {
+            for (int fromX = 0; fromX < 8; fromX++) {
+                Piece piece = getPiece(fromX, fromY);
+                if (piece != null && piece.getColor() == color) {
+                    for (int toY = 0; toY < 8; toY++) {
+                        for (int toX = 0; toX < 8; toX++) {
+                            if (isValidMove(fromX, fromY, toX, toY, color)) {
+                                // Пробуем сделать ход
+                                Piece captured = getPiece(toX, toY);
+                                board[toX][toY] = piece;
+                                board[fromX][fromY] = null;
+
+                                boolean stillInCheck = isInCheck(color);
+
+                                // Отменяем ход
+                                board[fromX][fromY] = piece;
+                                board[toX][toY] = captured;
+
+                                if (!stillInCheck) {
+                                    return false; // Найден ход, убирающий шах
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true; // Нет ходов, убирающих шах
+    }
+
+    public boolean isStalemate(PieceColor color) {
+        if (isInCheck(color)) return false;
+
+        // Проверяем, есть ли допустимые ходы
+        for (int fromY = 0; fromY < 8; fromY++) {
+            for (int fromX = 0; fromX < 8; fromX++) {
+                Piece piece = getPiece(fromX, fromY);
+                if (piece != null && piece.getColor() == color) {
+                    for (int toY = 0; toY < 8; toY++) {
+                        for (int toX = 0; toX < 8; toX++) {
+                            if (isValidMove(fromX, fromY, toX, toY, color)) {
+                                // Пробуем сделать ход
+                                Piece captured = getPiece(toX, toY);
+                                board[toX][toY] = piece;
+                                board[fromX][fromY] = null;
+
+                                boolean stillInCheck = isInCheck(color);
+
+                                // Отменяем ход
+                                board[fromX][fromY] = piece;
+                                board[toX][toY] = captured;
+
+                                if (!stillInCheck) {
+                                    return false; // Найден допустимый ход
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true; // Нет допустимых ходов
+    }
+
     public boolean wouldLeaveKingInCheck(int fromX, int fromY, int toX, int toY, PieceColor color) {
         // Сохранение текущего состояния
         Piece originalFrom = getPiece(fromX, fromY);
@@ -228,35 +327,6 @@ public class ChessBoard {
         return inCheck;
     }
 
-    public boolean isInCheck(PieceColor color) {
-        // позиция короля
-        int kingX = -1, kingY = -1;
-        outerloop:
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                Piece piece = getPiece(x, y);
-                if (piece != null && piece.getType() == PieceType.KING &&
-                    piece.getColor() == color) {
-                    kingX = x;
-                    kingY = y;
-                    break outerloop;
-                }
-            }
-        }
-        // Проверка, есть ли атака на короля
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                Piece piece = getPiece(x, y);
-                if (piece != null && piece.getColor() != color) {
-                    if (isValidMoveWithoutCheck(x, y, kingX, kingY, piece.getColor())) {
-                        if (isSoundOn) {sndCheck.play();}
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
     private boolean isValidMoveWithoutCheck(int fromX, int fromY, int toX, int toY, PieceColor color) {
         // Проверка на выход за пределы доски
         if (fromX < 0 || fromX >= 8 || fromY < 0 || fromY >= 8 ||
@@ -389,54 +459,6 @@ public class ChessBoard {
 
         return false;
     }
-    public boolean isCheckmate(PieceColor color) {
-        if (!isInCheck(color)) return false;
-
-        // Проверка все возможные ходы, чтобы убедиться, что нет выхода из шаха
-        for (int fromY = 0; fromY < 8; fromY++) {
-            for (int fromX = 0; fromX < 8; fromX++) {
-                Piece piece = getPiece(fromX, fromY);
-                if (piece != null && piece.getColor() == color) {
-                    for (int toY = 0; toY < 8; toY++) {
-                        for (int toX = 0; toX < 8; toX++) {
-                            if (isValidMove(fromX, fromY, toX, toY, color)) {
-                                if (!wouldLeaveKingInCheck(fromX, fromY, toX, toY, color)) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-    public boolean isStalemate(PieceColor color) {
-        if (isInCheck(color)) return false;
-
-        // Проверка, есть ли у игрока допустимые ходы
-        for (int fromY = 0; fromY < 8; fromY++) {
-            for (int fromX = 0; fromX < 8; fromX++) {
-                Piece piece = getPiece(fromX, fromY);
-                if (piece != null && piece.getColor() == color) {
-                    for (int toY = 0; toY < 8; toY++) {
-                        for (int toX = 0; toX < 8; toX++) {
-                            if (isValidMove(fromX, fromY, toX, toY, color)) {
-                                if (!wouldLeaveKingInCheck(fromX, fromY, toX, toY, color)) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return true;
-    }
-
-
     public void initializeFisherBoard() {
         // Очищаем доску
         for (int i = 0; i < 8; i++) {
@@ -447,8 +469,8 @@ public class ChessBoard {
 
         // Расстановка пешек
         for (int x = 0; x < 8; x++) {
-            board[x][1] = new Piece(PieceType.PAWN, PieceColor.BLACK);
-            board[x][6] = new Piece(PieceType.PAWN, PieceColor.WHITE);
+            board[x][1] = new Piece(PieceType.PAWN, PieceColor.WHITE);
+            board[x][6] = new Piece(PieceType.PAWN, PieceColor.BLACK);
         }
 
         // Создаем массив фигур для расстановки
@@ -473,14 +495,14 @@ public class ChessBoard {
             pieces.set(4, PieceType.KING);
         }
 
-        // Расставляем черные фигуры случайным образом
+        // Белые фигуры случайным образом
         for (int x = 0; x < 8; x++) {
-            board[x][0] = new Piece(pieces.get(x), PieceColor.BLACK);
+            board[x][0] = new Piece(pieces.get(x), PieceColor.WHITE);
         }
 
-        // Расставляем белые фигуры (зеркально черным)
+        // Черные фигуры (зеркально белым)
         for (int x = 0; x < 8; x++) {
-            board[x][7] = new Piece(pieces.get(x), PieceColor.WHITE);
+            board[x][7] = new Piece(pieces.get(x), PieceColor.BLACK);
         }
 
         // Проверяем правильность слонов (должны быть на разных цветах)
