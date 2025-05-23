@@ -32,7 +32,7 @@ public class ScreenGame implements Screen {
     private float timeElapsed = 0;
     private boolean isWhiteTurn = true;
 
-    private int timerYPositionTop = 1500 - 50; // Верхний таймер
+    private int timerYPositionTop = 1450; // Верхний таймер
     private int timerYPositionBottom = 250;     // Нижний таймер
 
     private Texture imgBackGround;
@@ -109,14 +109,14 @@ public class ScreenGame implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        font70.draw(batch, main.player.enemy, 520, 1500, SCR_WIDTH, Align.right, true);
+        font70.draw(batch, main.player.enemy, 500, 1500, SCR_WIDTH, Align.right, true);
         drawBoard();
         drawPieces();
         updateTimers();
         drawTimers();
         btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
         btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
-        font70.draw(batch, main.player.enemy, 520, 1450);
+        font70.draw(batch, main.player.enemy, 500, 1450);
         if(gameOver == TIME_IS_OVER){
             font70.draw(batch, "Time is over", 0, 1550, SCR_WIDTH, Align.center, false);
         }
@@ -309,12 +309,10 @@ public class ScreenGame implements Screen {
         String blackTimeStr = formatTime(blackTime);
 
         // таймер (черные)
-        font70.draw(batch, blackTimeStr,
-            Gdx.graphics.getWidth()/2 - 50, timerYPositionTop);
+        font70.draw(batch, blackTimeStr,100, timerYPositionTop);
 
         // Таймер (белые)
-        font70.draw(batch, whiteTimeStr,
-            Gdx.graphics.getWidth()/2 - 50, timerYPositionBottom);
+        font70.draw(batch, whiteTimeStr,100, timerYPositionBottom);
     }
 
     private String formatTime(float seconds) {
