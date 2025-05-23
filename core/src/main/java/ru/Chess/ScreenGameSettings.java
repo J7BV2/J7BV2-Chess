@@ -90,6 +90,7 @@ public class ScreenGameSettings implements Screen {
                     btnTimer.setText("Timer: "+ time);
                 }
                 if (btnPlay.hit(touch)) {
+                    ScreenGame.currentPlayer = PieceColor.WHITE;
                     main.setScreen(main.screenGame);
                 }
                 if (btnBack.hit(touch)) {

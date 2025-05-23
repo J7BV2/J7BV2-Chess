@@ -22,7 +22,7 @@ public class ScreenGlobalSettings implements Screen {
     private InputKeyboard keyboard;
     Texture imgBackGround;
 
-    SunButton btnName;
+    public static SunButton btnName;
     SunButton btnSound;
     SunButton btnBack;
 

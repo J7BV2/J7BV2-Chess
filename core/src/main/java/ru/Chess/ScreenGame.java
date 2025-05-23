@@ -26,6 +26,7 @@ public class ScreenGame implements Screen {
 
     public static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER =3;
     public static int gameOver = GAME_ON;
+    public static PieceColor currentPlayer ;
 
     private float whiteTime = timer;
     private float blackTime = timer;
@@ -43,7 +44,6 @@ public class ScreenGame implements Screen {
     private Piece selectedPiece = null;
     private int selectedX = -1, selectedY = -1;
 
-    private PieceColor currentPlayer = PieceColor.WHITE;
     private boolean isBoardFlipped = false;
 
     private String textForCheckmate;
@@ -53,7 +53,6 @@ public class ScreenGame implements Screen {
     Sound sndCheck;
     Sound sndStalemate;
 
-    SunButton btnName;
     SunButton btnBack;
 
     public ScreenGame(Main main) {
@@ -70,12 +69,12 @@ public class ScreenGame implements Screen {
         boardOffsetY = (int) ((SCR_HEIGHT - 8 * tileSize) / 2);
 
         loadTextures();
-
+        loadSettings();
 
         sndStalemate = Gdx.audio.newSound(Gdx.files.internal("stalemate.mp3"));
         sndCheckmate = Gdx.audio.newSound(Gdx.files.internal("checkmatelose.mp3"));
         sndCheck = Gdx.audio.newSound(Gdx.files.internal("check.mp3"));
-        btnName = new SunButton(main.player.name, font70, 520, 250);
+
         btnBack = new SunButton("x", font70, 850, 1600);
         board = new ChessBoard();
     }
@@ -115,7 +114,7 @@ public class ScreenGame implements Screen {
         updateTimers();
         drawTimers();
         btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
-        btnName.font.draw(batch, btnName.text, btnName.x, btnName.y);
+        font70.draw(batch, main.player.name, 500, 250);
         font70.draw(batch, main.player.enemy, 500, 1450);
         if(gameOver == TIME_IS_OVER){
             font70.draw(batch, "Time is over", 0, 1550, SCR_WIDTH, Align.center, false);
@@ -130,6 +129,7 @@ public class ScreenGame implements Screen {
             drawSelection();
         }
         batch.end();
+        loadSettings();
         handleInput();
     }
     @Override
@@ -333,5 +333,10 @@ public class ScreenGame implements Screen {
             gameOver = STALEMATE;
             if (isSoundOn) sndStalemate.play();
         }
+    }
+    public void loadSettings(){
+        Preferences prefs = Gdx.app.getPreferences("ChessSettings");
+        main.player.name = prefs.getString("name", "Noname");
+        isSoundOn = prefs.getBoolean("sound", true);
     }
 }
