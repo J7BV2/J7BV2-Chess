@@ -13,13 +13,12 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenGlobalSettings implements Screen {
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Vector3 touch;
-    private BitmapFont font70white, font70gray;
-    private BitmapFont font50white;
-    private Main main;
-    private InputKeyboard keyboard;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Vector3 touch;
+    private final BitmapFont font70white;
+    private final Main main;
+    private final InputKeyboard keyboard;
     Texture imgBackGround;
 
     public static SunButton btnName;
@@ -32,7 +31,7 @@ public class ScreenGlobalSettings implements Screen {
         camera = main.camera;
         touch = main.touch;
         font70white = main.font70white;
-        font50white = main.font50white;
+        BitmapFont font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 
         imgBackGround = new Texture("chess4.png");

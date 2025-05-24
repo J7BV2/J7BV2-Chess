@@ -12,17 +12,17 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenAbout implements Screen {
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Vector3 touch;
-    private BitmapFont font70;
-    private BitmapFont font50;
-    private Main main;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Vector3 touch;
+    private final BitmapFont font70;
+    private final BitmapFont font50;
+    private final Main main;
 
     Texture imgBackGround;
 
     SunButton btnBack;
-    private String text = "Приветствую.\n" +
+    private final String text = "Приветствую.\n" +
         "\n" +
         "Это игра - шахматы\n" +
         "здесь реализованы все\n" +

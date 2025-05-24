@@ -11,10 +11,10 @@ import java.util.Collections;
 public class ChessBoard {
     public Piece[][] board;
     private boolean whiteKingMoved = false;
-    private boolean[] whiteRooksMoved = {false, false};
+    private final boolean[] whiteRooksMoved = {false, false};
     private boolean blackKingMoved = false;
-    private boolean[] blackRooksMoved = {false, false};
-    private int[] enPassantTarget = null;
+    private final boolean[] blackRooksMoved = {false, false};
+    private final int[] enPassantTarget = null;
 
     Sound sndPieceMove;
 
@@ -116,11 +116,8 @@ public class ChessBoard {
             return true;
         }
         // Взятие на проходе
-        if (enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
-            Math.abs(toX - fromX) == 1 && toY == fromY + direction) {
-            return true;
-        }
-        return false;
+        return enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
+            Math.abs(toX - fromX) == 1 && toY == fromY + direction;
     }
 
     private boolean isValidKingMove(int fromX, int fromY, int toX, int toY, PieceColor color) {
@@ -165,7 +162,6 @@ public class ChessBoard {
     }
     private void performCastling(int kingFromX, int kingFromY, int kingToX, int kingToY, PieceColor color) {
         boolean isShortCastling = (kingToX > kingFromX);
-        int y = kingFromY;
         int rookFromX = isShortCastling ? 7 : 0;
         int rookToX = isShortCastling ? 5 : 3;
 
@@ -174,8 +170,8 @@ public class ChessBoard {
         board[kingFromX][kingFromY] = null;
 
         // Перемещение ладьи
-        board[rookToX][y] = board[rookFromX][y];
-        board[rookFromX][y] = null;
+        board[rookToX][kingFromY] = board[rookFromX][kingFromY];
+        board[rookFromX][kingFromY] = null;
 
         // Обновление флагов
         if (color == PieceColor.WHITE) {
@@ -388,15 +384,11 @@ public class ChessBoard {
             target != null && target.getColor() != color) {
             return true;
         }
-        if (enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
+        return enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
             Math.abs(toX - fromX) == 1 && toY == fromY + direction &&
             getPiece(toX, fromY) != null &&
             getPiece(toX, fromY).getType() == PieceType.PAWN &&
-            getPiece(toX, fromY).getColor() != color) {
-            return true;
-        }
-
-        return false;
+            getPiece(toX, fromY).getColor() != color;
     }
     private boolean isValidKingMoveWithoutCheck(int fromX, int fromY, int toX, int toY, PieceColor color) {
         int deltaX = Math.abs(toX - fromX);

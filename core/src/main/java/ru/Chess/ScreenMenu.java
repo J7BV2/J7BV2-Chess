@@ -12,11 +12,11 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenMenu implements Screen {
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Vector3 touch;
-    private BitmapFont font;
-    private Main main;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Vector3 touch;
+    private final BitmapFont font;
+    private final Main main;
     Texture imgBackGround;
 
     SunButton btnPlay;

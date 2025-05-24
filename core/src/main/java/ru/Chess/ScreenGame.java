@@ -14,15 +14,15 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenGame implements Screen {
-    private SpriteBatch batch;
-    private Vector3 touch;
-    private OrthographicCamera camera;
-    private ChessBoard board;
-    private BitmapFont font70;
+    private final SpriteBatch batch;
+    private final Vector3 touch;
+    private final OrthographicCamera camera;
+    private final ChessBoard board;
+    private final BitmapFont font70;
     private Texture[] whitePieces;
     private Texture[] blackPieces;
     private Texture lightTile, darkTile;
-    private Main main;
+    private final Main main;
 
     public static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER = 3;
     public static int gameOver = GAME_ON;
@@ -34,13 +34,11 @@ public class ScreenGame implements Screen {
     private float timeElapsed = 0;
     private boolean isWhiteTurn = true;
 
-    private int timerYPositionTop = 1450; // Верхний таймер
-    private int timerYPositionBottom = 250;     // Нижний таймер
+    private final Texture imgBackGround;
 
-    private Texture imgBackGround;
-
-    private int tileSize;
-    private int boardOffsetX, boardOffsetY;
+    private final int tileSize;
+    private final int boardOffsetX;
+    private final int boardOffsetY;
 
     private Piece selectedPiece = null;
     private int selectedX = -1, selectedY = -1;
@@ -198,6 +196,7 @@ public class ScreenGame implements Screen {
                     // Параметры переворота
                     float originX = tileSize / 2f;
                     float originY = tileSize / 2f;
+                    assert texture != null;
                     batch.draw(texture,
                         drawX, drawY,
                         originX, originY,
@@ -305,10 +304,15 @@ public class ScreenGame implements Screen {
         String whiteTimeStr = formatTime(whiteTime);
         String blackTimeStr = formatTime(blackTime);
 
+        // Верхний таймер
+        int timerYPositionTop = 1450;
         font70.draw(batch, blackTimeStr,100, timerYPositionTop);
+        // Нижний таймер
+        int timerYPositionBottom = 250;
         font70.draw(batch, whiteTimeStr,100, timerYPositionBottom);
     }
 
+    @SuppressWarnings("DefaultLocale")
     private String formatTime(float seconds) {
         int minutes = (int)(seconds / 60);
         int secs = (int)(seconds % 60);
@@ -319,7 +323,7 @@ public class ScreenGame implements Screen {
         if (board.isInCheck(currentPlayer) && !board.isCheckmate(currentPlayer)) {
             if (isSoundOn) sndCheck.play();
         } else if (board.isCheckmate(currentPlayer)) {
-                textForCheckmate = (currentPlayer == PieceColor.WHITE ? "White" : "Black") + " wins";
+                textForCheckmate = (currentPlayer == PieceColor.WHITE ? "Black" : "White") + " wins";
                 gameOver = CHECKMATE;
                 if (isSoundOn) sndCheckmate.play();
 

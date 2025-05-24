@@ -3,7 +3,6 @@ package ru.Chess;
 import static ru.Chess.Main.*;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,13 +12,13 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Align;
 
 public class ScreenGameSettings implements Screen {
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Vector3 touch;
-    private BitmapFont font70white, font70gray;
-    private BitmapFont font50white;
-    private InputKeyboard keyboard;
-    private Main main;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Vector3 touch;
+    private final BitmapFont font70white;
+    private final BitmapFont font70gray;
+    private final InputKeyboard keyboard;
+    private final Main main;
     public String time = timer/60+ " minutes";
     Texture imgBackGround;
 
@@ -38,7 +37,7 @@ public class ScreenGameSettings implements Screen {
         touch = main.touch;
         font70white = main.font70white;
         font70gray = main.font70gray;
-        font50white = main.font50white;
+        BitmapFont font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 
         imgBackGround = new Texture("chess5.png");
