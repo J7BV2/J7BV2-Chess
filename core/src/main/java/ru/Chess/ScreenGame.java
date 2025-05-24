@@ -104,11 +104,11 @@ public class ScreenGame implements Screen {
             }
         }
         Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1);
+
         // отрисовка
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        font70.draw(batch, main.player.enemy, 500, 1500, SCR_WIDTH, Align.right, true);
         drawBoard();
         drawPieces();
         updateTimers();
@@ -125,11 +125,8 @@ public class ScreenGame implements Screen {
         if (gameOver == STALEMATE){
             font70.draw(batch, textForStalemate, 0, 1550, SCR_WIDTH, Align.center, false);
         }
-        if (selectedPiece != null) {
-            drawSelection();
-        }
+        if (selectedPiece != null) drawSelection();
         batch.end();
-        loadSettings();
         handleInput();
     }
     @Override
@@ -201,14 +198,14 @@ public class ScreenGame implements Screen {
 
                     // Параметры переворота
                     float scaleX = isBoardFlipped ? -1 : 1;
-                    float originX = tileSize / 2f;  // Центр фигуры по X
-                    float originY = tileSize / 2f; // Центр фигуры по Y
+                    float originX = tileSize / 2f;
+                    float originY = tileSize / 2f;
                     batch.draw(texture,
                         drawX, drawY,
                         originX, originY,
                         tileSize, tileSize,
-                        1, 1,              // Без масштабирования
-                        isBoardFlipped ? 180 : 0, // Только вращение
+                        1, 1,
+                        isBoardFlipped ? 180 : 0,
                         0, 0,
                         texture.getWidth(), texture.getHeight(),
                         false, false);
@@ -259,10 +256,11 @@ public class ScreenGame implements Screen {
                     }
                 } else {
                     if (board.isValidMove(selectedX, selectedY, x, y, currentPlayer)) {
+
                         // Проверка, убирает ли ход шах (если он есть)
                         if (!board.wouldLeaveKingInCheck(selectedX, selectedY, x, y, currentPlayer)) {
                             board.movePiece(selectedX, selectedY, x, y);
-                            checkGameEndConditions();
+                            gameConditions();
                             switchPlayer();
                         }
                     }
@@ -277,12 +275,12 @@ public class ScreenGame implements Screen {
         isBoardFlipped = !isBoardFlipped;
         currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.WHITE : PieceColor.BLACK;
         timeElapsed = 0;
-        if (gameOver == GAME_ON) checkAndDisplayGameResult();
+        if (gameOver == GAME_ON) checkGameResult();
     }
-    private void checkGameEndConditions () {
+    private void gameConditions() {
         isWhiteTurn = !isWhiteTurn;
         currentPlayer = isWhiteTurn ? PieceColor.WHITE : PieceColor.BLACK;
-        timeElapsed = 0; // Сброс сетчика
+        timeElapsed = 0;
     }
     private void updateTimers() {
         if (gameOver == CHECKMATE || gameOver == STALEMATE) return;
@@ -308,10 +306,7 @@ public class ScreenGame implements Screen {
         String whiteTimeStr = formatTime(whiteTime);
         String blackTimeStr = formatTime(blackTime);
 
-        // таймер (черные)
         font70.draw(batch, blackTimeStr,100, timerYPositionTop);
-
-        // Таймер (белые)
         font70.draw(batch, whiteTimeStr,100, timerYPositionBottom);
     }
 
@@ -320,7 +315,8 @@ public class ScreenGame implements Screen {
         int secs = (int)(seconds % 60);
         return String.format("%02d:%02d", minutes, secs);
     }
-    private void checkAndDisplayGameResult() {
+
+    private void checkGameResult() {
         if (board.isInCheck(currentPlayer) && !board.isCheckmate(currentPlayer)) {
             if (isSoundOn) sndCheck.play();
         } else if (board.isCheckmate(currentPlayer)) {

@@ -32,7 +32,6 @@ public class ScreenGlobalSettings implements Screen {
         camera = main.camera;
         touch = main.touch;
         font70white = main.font70white;
-        font70gray = main.font70gray;
         font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 

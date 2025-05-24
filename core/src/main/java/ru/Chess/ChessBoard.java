@@ -11,11 +11,10 @@ import java.util.Collections;
 public class ChessBoard {
     public Piece[][] board;
     private boolean whiteKingMoved = false;
-    private boolean[] whiteRooksMoved = {false, false}; // [a-side, h-side]
+    private boolean[] whiteRooksMoved = {false, false};
     private boolean blackKingMoved = false;
     private boolean[] blackRooksMoved = {false, false};
-    private int[] enPassantTarget = null; // [x, y] координаты клетки для взятия на проходе
-
+    private int[] enPassantTarget = null;
 
     Sound sndPieceMove;
 
@@ -65,7 +64,6 @@ public class ChessBoard {
         board[fromX][fromY] = null;
     }
 
-
     public boolean isValidMove(int fromX, int fromY, int toX, int toY, PieceColor color) {
         // Проверка на выход за пределы доски
         if (fromX < 0 || fromX >= 8 || fromY < 0 || fromY >= 8 ||
@@ -87,7 +85,7 @@ public class ChessBoard {
         if (target != null && target.getColor() == color) {
             return false;
         }
-        // Получение разницы координат
+        // Разница координат
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
 
@@ -118,42 +116,40 @@ public class ChessBoard {
 
         // Обычный ход вперед
         if (fromX == toX && target == null) {
-            // На одну клетку
+            // Одна клетка
             if (toY == fromY + direction) {
                 return true;
             }
-            // На две клетки из начальной позиции
+            // Две клетки
             if (fromY == startRow && toY == fromY + 2 * direction &&
                 getPiece(fromX, fromY + direction) == null) {
                 return true;
             }
         }
-
-        // Взятие фигуры по диагонали
+        // Взятие фигуры
         if (Math.abs(toX - fromX) == 1 && toY == fromY + direction &&
             target != null && target.getColor() != color) {
             return true;
         }
-
         // Взятие на проходе
         if (enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
             Math.abs(toX - fromX) == 1 && toY == fromY + direction) {
             return true;
         }
-
         return false;
     }
+
     private boolean isValidKingMove(int fromX, int fromY, int toX, int toY, PieceColor color) {
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
 
-        // Обычный ход короля
+        // Ходы короля
         if ((deltaX <= 1 && deltaY <= 1)) {
             return true;
         }if (deltaX == 2 && deltaY == 0 && fromY == toY &&
             (fromY == 0 || fromY == 7) && !isInCheck(color)) {
 
-            // Короткая рокировка (h-side)
+            // Короткая рокировка
             if (toX == 6) {
                 Piece rook = getPiece(7, fromY);
                 if (rook != null && rook.getType() == PieceType.ROOK && rook.getColor() == color) {
@@ -170,7 +166,7 @@ public class ChessBoard {
                     }
                 }
             }
-            // Длинная рокировка (a-side)
+            // Длинная рокировка
             else if (toX == 2) {
                 Piece rook = getPiece(0, fromY);
                 if (rook != null && rook.getType() == PieceType.ROOK && rook.getColor() == color) {
@@ -211,7 +207,7 @@ public class ChessBoard {
     }
 
     public boolean isInCheck(PieceColor color) {
-        // Находим позицию короля
+        // Нахождение позиции короля
         int kingX = -1, kingY = -1;
         outerloop:
         for (int y = 0; y < 8; y++) {
@@ -226,7 +222,7 @@ public class ChessBoard {
             }
         }
 
-        // Проверяем, есть ли атака на короля
+        // Проверка, атаки на короля
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 Piece piece = getPiece(x, y);
@@ -243,7 +239,7 @@ public class ChessBoard {
     public boolean isCheckmate(PieceColor color) {
         if (!isInCheck(color)) return false;
 
-        // Проверяем все возможные ходы
+        // Проверка все возможные ходы
         for (int fromY = 0; fromY < 8; fromY++) {
             for (int fromX = 0; fromX < 8; fromX++) {
                 Piece piece = getPiece(fromX, fromY);
@@ -251,19 +247,18 @@ public class ChessBoard {
                     for (int toY = 0; toY < 8; toY++) {
                         for (int toX = 0; toX < 8; toX++) {
                             if (isValidMove(fromX, fromY, toX, toY, color)) {
-                                // Пробуем сделать ход
+                                // Попытка сделать ход
                                 Piece captured = getPiece(toX, toY);
                                 board[toX][toY] = piece;
                                 board[fromX][fromY] = null;
 
                                 boolean stillInCheck = isInCheck(color);
 
-                                // Отменяем ход
                                 board[fromX][fromY] = piece;
                                 board[toX][toY] = captured;
 
                                 if (!stillInCheck) {
-                                    return false; // Найден ход, убирающий шах
+                                    return false;
                                 }
                             }
                         }
@@ -271,13 +266,13 @@ public class ChessBoard {
                 }
             }
         }
-        return true; // Нет ходов, убирающих шах
+        return true;
     }
 
     public boolean isStalemate(PieceColor color) {
         if (isInCheck(color)) return false;
 
-        // Проверяем, есть ли допустимые ходы
+        // Проверка, есть ли допустимые ходы
         for (int fromY = 0; fromY < 8; fromY++) {
             for (int fromX = 0; fromX < 8; fromX++) {
                 Piece piece = getPiece(fromX, fromY);
@@ -285,19 +280,18 @@ public class ChessBoard {
                     for (int toY = 0; toY < 8; toY++) {
                         for (int toX = 0; toX < 8; toX++) {
                             if (isValidMove(fromX, fromY, toX, toY, color)) {
-                                // Пробуем сделать ход
+                                // Попытка сделать ход
                                 Piece captured = getPiece(toX, toY);
                                 board[toX][toY] = piece;
                                 board[fromX][fromY] = null;
 
                                 boolean stillInCheck = isInCheck(color);
 
-                                // Отменяем ход
                                 board[fromX][fromY] = piece;
                                 board[toX][toY] = captured;
 
                                 if (!stillInCheck) {
-                                    return false; // Найден допустимый ход
+                                    return false;
                                 }
                             }
                         }
@@ -305,7 +299,7 @@ public class ChessBoard {
                 }
             }
         }
-        return true; // Нет допустимых ходов
+        return true;
     }
 
     public boolean wouldLeaveKingInCheck(int fromX, int fromY, int toX, int toY, PieceColor color) {
@@ -320,7 +314,6 @@ public class ChessBoard {
         // Проверка, остался ли король под шахом
         boolean inCheck = isInCheck(color);
 
-        // Отмена временного хода
         board[fromX][fromY] = originalFrom;
         board[toX][toY] = originalTo;
 
@@ -381,26 +374,19 @@ public class ChessBoard {
         int direction = (color == PieceColor.BLACK) ? -1 : 1;
         int startRow = (color == PieceColor.BLACK) ? 6 : 1;
 
-        // Обычный ход вперед
         if (fromX == toX && target == null) {
-            // На одну клетку
             if (toY == fromY + direction) {
                 return true;
             }
-            // На две клетки из начальной позиции
             if (fromY == startRow && toY == fromY + 2 * direction &&
                 getPiece(fromX, fromY + direction) == null) {
                 return true;
             }
         }
-
-        // Взятие фигуры по диагонали
         if (Math.abs(toX - fromX) == 1 && toY == fromY + direction &&
             target != null && target.getColor() != color) {
             return true;
         }
-
-        // Взятие на проходе
         if (enPassantTarget != null && toX == enPassantTarget[0] && toY == enPassantTarget[1] &&
             Math.abs(toX - fromX) == 1 && toY == fromY + direction &&
             getPiece(toX, fromY) != null &&
@@ -415,7 +401,7 @@ public class ChessBoard {
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
 
-        // Обычный ход короля
+        // Ходы короля
         if ((deltaX <= 1 && deltaY <= 1)) {
             return true;
         }
@@ -428,7 +414,7 @@ public class ChessBoard {
             boolean kingMoved = (color == PieceColor.BLACK) ? whiteKingMoved : blackKingMoved;
             if (kingMoved) return false;
 
-            // Короткая рокировка (h-side)
+            // Короткая рокировка
             if (toX == 6) {
                 Piece rook = getPiece(7, fromY);
                 if (rook == null || rook.getType() != PieceType.ROOK || rook.getColor() != color) {
@@ -441,7 +427,7 @@ public class ChessBoard {
                 // Проверка, свободны ли клетки между королем и ладьей
                 return getPiece(5, fromY) == null && getPiece(6, fromY) == null;
             }
-            // Длинная рокировка (a-side)
+            // Длинная рокировка
             else if (toX == 2) {
                 Piece rook = getPiece(0, fromY);
                 if (rook == null || rook.getType() != PieceType.ROOK || rook.getColor() != color) {
@@ -460,7 +446,7 @@ public class ChessBoard {
         return false;
     }
     public void initializeFisherBoard() {
-        // Очищаем доску
+        // Очистка доски
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 board[i][j] = null;
@@ -473,7 +459,6 @@ public class ChessBoard {
             board[x][6] = new Piece(PieceType.PAWN, PieceColor.BLACK);
         }
 
-        // Создаем массив фигур для расстановки
         ArrayList<PieceType> pieces = new ArrayList<>();
         pieces.add(PieceType.ROOK);
         pieces.add(PieceType.KNIGHT);
@@ -484,34 +469,28 @@ public class ChessBoard {
         pieces.add(PieceType.KNIGHT);
         pieces.add(PieceType.ROOK);
 
-        // Перемешиваем фигуры (кроме короля)
         Collections.shuffle(pieces.subList(1, pieces.size()-1));
 
-        // Убедимся, что король между ладьями (правило Фишера)
+        // Проверка, что король между ладьями
         int kingPos = pieces.indexOf(PieceType.KING);
         if (kingPos < 1 || kingPos > 6) {
-            // Если король оказался на краю, переставляем его ближе к центру
             pieces.set(kingPos, pieces.get(4));
             pieces.set(4, PieceType.KING);
         }
 
-        // Белые фигуры случайным образом
+        // Белые фигуры
         for (int x = 0; x < 8; x++) {
             board[x][0] = new Piece(pieces.get(x), PieceColor.WHITE);
         }
 
-        // Черные фигуры (зеркально белым)
+        // Черные фигуры
         for (int x = 0; x < 8; x++) {
             board[x][7] = new Piece(pieces.get(x), PieceColor.BLACK);
         }
-
-        // Проверяем правильность слонов (должны быть на разных цветах)
         fixBishopsPositions();
     }
 
-
     private void fixBishopsPositions() {
-        // Проверяем черных слонов
         int blackBishop1X = -1, blackBishop2X = -1;
         for (int x = 0; x < 8; x++) {
             if (board[x][0] != null && board[x][0].getType() == PieceType.BISHOP) {
@@ -522,12 +501,10 @@ public class ChessBoard {
 
         // Если слоны на клетках одного цвета
         if ((blackBishop1X + blackBishop2X) % 2 == 0) {
-            // Находим не слоновую фигуру для замены
             for (int x = 0; x < 8; x++) {
                 if (board[x][0] != null &&
                     board[x][0].getType() != PieceType.BISHOP &&
                     board[x][0].getType() != PieceType.KING) {
-                    // Меняем местами с одним из слонов
                     Piece temp = board[x][0];
                     board[x][0] = board[blackBishop2X][0];
                     board[blackBishop2X][0] = temp;
