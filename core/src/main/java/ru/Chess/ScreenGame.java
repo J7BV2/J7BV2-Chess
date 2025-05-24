@@ -192,7 +192,6 @@ public class ScreenGame implements Screen {
                 if (piece != null) {
                     Texture texture = getPieceTexture(piece);
 
-                    // Расчет координаты отрисовки
                     float drawX = boardOffsetX + x * tileSize;
                     float drawY = boardOffsetY + y * tileSize;
 

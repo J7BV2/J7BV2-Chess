@@ -59,6 +59,13 @@ public class ChessBoard {
     }
 
     public void movePiece(int fromX, int fromY, int toX, int toY) {
+        Piece piece = getPiece(fromX, fromY);
+        if (piece == null) return;
+
+        if (piece.getType() == PieceType.KING && Math.abs(toX - fromX) == 2) {
+            performCastling(fromX, fromY, toX, toY, piece.getColor());
+            return;
+        }
         if (isSoundOn) {sndPieceMove.play();}
         board[toX][toY] = board[fromX][fromY];
         board[fromX][fromY] = null;
@@ -80,6 +87,13 @@ public class ChessBoard {
         // Проверка, что фигура существует и принадлежит текущему игроку
         if (piece == null || piece.getColor() != color) {
             return false;
+        }
+        Piece piece1 = getPiece(fromX, fromY);
+        if (piece1 == null) return false;
+
+        // Проверка рокировки
+        if (piece1.getType() == PieceType.KING && Math.abs(toX - fromX) == 2 && fromY == toY) {
+            return isValidCastling(fromX, fromY, toX, toY, color);
         }
         // Проверка, что целевая клетка не занята своей фигурой
         if (target != null && target.getColor() == color) {
@@ -142,52 +156,69 @@ public class ChessBoard {
     private boolean isValidKingMove(int fromX, int fromY, int toX, int toY, PieceColor color) {
         int deltaX = Math.abs(toX - fromX);
         int deltaY = Math.abs(toY - fromY);
-
-        // Ходы короля
-        if ((deltaX <= 1 && deltaY <= 1)) {
-            return true;
-        }if (deltaX == 2 && deltaY == 0 && fromY == toY &&
-            (fromY == 0 || fromY == 7) && !isInCheck(color)) {
-
-            // Короткая рокировка
-            if (toX == 6) {
-                Piece rook = getPiece(7, fromY);
-                if (rook != null && rook.getType() == PieceType.ROOK && rook.getColor() == color) {
-                    if (color == PieceColor.BLACK) {
-                        if (!whiteKingMoved && !whiteRooksMoved[1] &&
-                            getPiece(5, fromY) == null && getPiece(6, fromY) == null) {
-                            return true;
-                        }
-                    } else {
-                        if (!blackKingMoved && !blackRooksMoved[1] &&
-                            getPiece(5, fromY) == null && getPiece(6, fromY) == null) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            // Длинная рокировка
-            else if (toX == 2) {
-                Piece rook = getPiece(0, fromY);
-                if (rook != null && rook.getType() == PieceType.ROOK && rook.getColor() == color) {
-                    if (color == PieceColor.BLACK) {
-                        if (!whiteKingMoved && !whiteRooksMoved[0] &&
-                            getPiece(1, fromY) == null && getPiece(2, fromY) == null &&
-                            getPiece(3, fromY) == null) {
-                            return true;
-                        }
-                    } else {
-                        if (!blackKingMoved && !blackRooksMoved[0] &&
-                            getPiece(1, fromY) == null && getPiece(2, fromY) == null &&
-                            getPiece(3, fromY) == null) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
+        return (deltaX <= 1 && deltaY <= 1);
     }
+
+    private boolean isValidCastling(int fromX, int fromY, int toX, int toY, PieceColor color) {
+        // Проверка действительности рокировки
+        if (Math.abs(toX - fromX) != 2 || fromY != toY) return false;
+
+        boolean isShortCastling = (toX > fromX);
+        int y = (color == PieceColor.BLACK) ? 7 : 0;
+
+        // Проверка, что король и ладья не двигались
+        boolean kingMoved = (color == PieceColor.BLACK) ? whiteKingMoved : blackKingMoved;
+        int rookX = isShortCastling ? 7 : 0;
+        boolean rookMoved = (color == PieceColor.BLACK) ?
+            (isShortCastling ? whiteRooksMoved[1] : whiteRooksMoved[0]) :
+            (isShortCastling ? blackRooksMoved[1] : blackRooksMoved[0]);
+
+        if (kingMoved || rookMoved) return false;
+
+        // Проверка, что между королем и ладьей нет фигур
+        int start = Math.min(fromX, rookX) + 1;
+        int end = Math.max(fromX, rookX);
+        for (int x = start; x < end; x++) {
+            if (getPiece(x, y) != null) return false;
+        }
+
+        // Проверка, что король не под шахом и не проходит через битое поле
+        if (isInCheck(color)) return false;
+
+        // Проверка промежуточных клеток
+        int step = isShortCastling ? 1 : -1;
+        for (int x = fromX + step; x != toX; x += step) {
+            if (wouldLeaveKingInCheck(fromX, fromY, x, y, color)) return false;
+        }
+
+        return true;
+    }
+    private void performCastling(int kingFromX, int kingFromY, int kingToX, int kingToY, PieceColor color) {
+        boolean isShortCastling = (kingToX > kingFromX);
+        int y = kingFromY;
+        int rookFromX = isShortCastling ? 7 : 0;
+        int rookToX = isShortCastling ? 5 : 3;
+
+        // Перемещение короля
+        board[kingToX][kingToY] = board[kingFromX][kingFromY];
+        board[kingFromX][kingFromY] = null;
+
+        // Перемещение ладьи
+        board[rookToX][y] = board[rookFromX][y];
+        board[rookFromX][y] = null;
+
+        // Обновление флагов
+        if (color == PieceColor.WHITE) {
+            whiteKingMoved = true;
+            if (isShortCastling) whiteRooksMoved[1] = true;
+            else whiteRooksMoved[0] = true;
+        } else {
+            blackKingMoved = true;
+            if (isShortCastling) blackRooksMoved[1] = true;
+            else blackRooksMoved[0] = true;
+        }
+    }
+
     private boolean isPathClear(int fromX, int fromY, int toX, int toY) {
         int stepX = Integer.compare(toX, fromX);
         int stepY = Integer.compare(toY, fromY);
