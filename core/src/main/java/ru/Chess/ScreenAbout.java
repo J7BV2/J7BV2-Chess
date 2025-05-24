@@ -15,26 +15,33 @@ public class ScreenAbout implements Screen {
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Vector3 touch;
-    private BitmapFont font;
+    private BitmapFont font70;
+    private BitmapFont font50;
     private Main main;
 
     Texture imgBackGround;
 
     SunButton btnBack;
-    private String text = "Это игра.\n" +
-        "В неё надо играть.\n" +
-        "Удачи.";
+    private String text = "Приветствую.\n" +
+        "\n" +
+        "Это игра - шахматы\n" +
+        "здесь реализованы все\n" +
+        "правила настоящих\n"+
+        "шахмат.\n"+
+        "\n"+
+        "Приятной игры!";
 
     public ScreenAbout(Main main) {
         this.main = main;
         batch = main.batch;
         camera = main.camera;
         touch = main.touch;
-        font = main.font70white;
+        font70 = main.font70white;
+        font50 = main.font50white;
 
-        imgBackGround = new Texture("chess4.png");
+        imgBackGround = new Texture("chess3.png");
 
-        btnBack = new SunButton("Back", font, 150);
+        btnBack = new SunButton("Back", font70, 150);
     }
 
     @Override
@@ -55,8 +62,9 @@ public class ScreenAbout implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        font.draw(batch, "ABOUT", 0, 1500, SCR_WIDTH, Align.center, false);
-        font.draw(batch, text, 0, 1200, SCR_WIDTH, Align.center, false);
+        font70.draw(batch, "ABOUT", 0, 1500, SCR_WIDTH, Align.center, false);
+        font50.draw(batch, "Developer - J7BV2", 0, 1590);
+        font70.draw(batch, text, 0, 1300, SCR_WIDTH, Align.center, false);
         btnBack.font.draw(batch, btnBack.text, btnBack.x, btnBack.y);
         batch.end();
     }

@@ -23,11 +23,11 @@ public class ScreenGameSettings implements Screen {
     public String time = timer/60+ " minutes";
     Texture imgBackGround;
 
+    SunButton btnPlay;
     SunButton btnVariant;
     SunButton btnClassic;
     SunButton btnChess960;
     SunButton btnTimer;
-    SunButton btnPlay;
     SunButton btnEnemy;
     SunButton btnBack;
 
@@ -41,7 +41,7 @@ public class ScreenGameSettings implements Screen {
         font50white = main.font50white;
         keyboard = new InputKeyboard(font50white, SCR_WIDTH, SCR_HEIGHT/2, 7);
 
-        imgBackGround = new Texture("chess2.png");
+        imgBackGround = new Texture("chess5.png");
 
         btnVariant = new SunButton("Variant", font70white, 100, 1200);
         btnClassic = new SunButton("Classic", font70white, 200, 1100);
@@ -49,7 +49,7 @@ public class ScreenGameSettings implements Screen {
         setFontColorByVariants();
         btnTimer = new SunButton("Timer: "+ time, font70white, 100, 850);
         btnEnemy = new SunButton("Enemy: "+main.player.enemy, font70white, 100, 750);
-        btnPlay = new SunButton ("Play", font70white, 350);
+        btnPlay = new SunButton ("Play", font70white, 300);
         btnBack = new SunButton("Back", font70white, 150);
     }
     @Override
@@ -90,7 +90,6 @@ public class ScreenGameSettings implements Screen {
                     btnTimer.setText("Timer: "+ time);
                 }
                 if (btnPlay.hit(touch)) {
-                    ScreenGame.currentPlayer = PieceColor.WHITE;
                     main.setScreen(main.screenGame);
                 }
                 if (btnBack.hit(touch)) {

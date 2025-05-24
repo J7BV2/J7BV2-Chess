@@ -31,7 +31,7 @@ public class ScreenMenu implements Screen {
         touch = main.touch;
         font = main.font70white;
 
-        imgBackGround = new Texture("chess1.png");
+        imgBackGround = new Texture("chess6.png");
 
         btnPlay = new SunButton("Play", font, 100, 1000);
         btnSettings = new SunButton("Settings", font, 100, 850);
@@ -69,7 +69,7 @@ public class ScreenMenu implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
         batch.draw(imgBackGround, 0, 0, SCR_WIDTH, SCR_HEIGHT);
-        font.draw(batch, "CHESS", 100, 1500);
+        font.draw(batch, "CHESS", 0, 1450, SCR_WIDTH, Align.center, false);
         btnPlay.font.draw(batch, btnPlay.text, btnPlay.x, btnPlay.y);
         btnSettings.font.draw(batch, btnSettings.text, btnSettings.x, btnSettings.y);
         btnAbout.font.draw(batch, btnAbout.text, btnAbout.x, btnAbout.y);

@@ -24,10 +24,11 @@ public class ScreenGame implements Screen {
     private Texture lightTile, darkTile;
     private Main main;
 
-    public static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER =3;
+    public static final int GAME_ON = 0, CHECKMATE = 1, STALEMATE = 2, TIME_IS_OVER = 3;
     public static int gameOver = GAME_ON;
-    public static PieceColor currentPlayer ;
+    public static PieceColor currentPlayer = PieceColor.WHITE;
 
+    private static final int TO_WHITE = 0, TO_BLACK = 180;
     private float whiteTime = timer;
     private float blackTime = timer;
     private float timeElapsed = 0;
@@ -43,8 +44,7 @@ public class ScreenGame implements Screen {
 
     private Piece selectedPiece = null;
     private int selectedX = -1, selectedY = -1;
-
-    private boolean isBoardFlipped = false;
+    private int flipPosition;
 
     private String textForCheckmate;
     private String textForStalemate;
@@ -62,7 +62,7 @@ public class ScreenGame implements Screen {
         camera = main.camera;
         font70 = main.font70white;
 
-        imgBackGround = new Texture("chess8.png");
+        imgBackGround = new Texture("chess9.png");
 
         tileSize = (int) (SCR_WIDTH / 8);
         boardOffsetX = 0;
@@ -94,7 +94,7 @@ public class ScreenGame implements Screen {
         if(Gdx.input.justTouched()) {
             if (btnBack.hit(touch)) {
                 main.setScreen(main.screenMenu);
-                if (currentPlayer == PieceColor.BLACK) switchPlayer();
+                if (flipPosition == TO_BLACK) flipPosition = TO_WHITE;
                 gameOver = GAME_ON;
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
@@ -196,7 +196,6 @@ public class ScreenGame implements Screen {
                     float drawY = boardOffsetY + y * tileSize;
 
                     // Параметры переворота
-                    float scaleX = isBoardFlipped ? -1 : 1;
                     float originX = tileSize / 2f;
                     float originY = tileSize / 2f;
                     batch.draw(texture,
@@ -204,7 +203,7 @@ public class ScreenGame implements Screen {
                         originX, originY,
                         tileSize, tileSize,
                         1, 1,
-                        isBoardFlipped ? 180 : 0,
+                        flipPosition,
                         0, 0,
                         texture.getWidth(), texture.getHeight(),
                         false, false);
@@ -256,7 +255,7 @@ public class ScreenGame implements Screen {
                 } else {
                     if (board.isValidMove(selectedX, selectedY, x, y, currentPlayer)) {
 
-                        // Проверка, убирает ли ход шах (если он есть)
+                        // Проверка, убирает ли ход шах
                         if (!board.wouldLeaveKingInCheck(selectedX, selectedY, x, y, currentPlayer)) {
                             board.movePiece(selectedX, selectedY, x, y);
                             gameConditions();
@@ -270,11 +269,12 @@ public class ScreenGame implements Screen {
             }
         }
     }
-    private void switchPlayer() {
-        isBoardFlipped = !isBoardFlipped;
+    public void switchPlayer() {
+        if (flipPosition == TO_WHITE) flipPosition = TO_BLACK;
+        else if (flipPosition == TO_BLACK) flipPosition = TO_WHITE;
         currentPlayer = (currentPlayer == PieceColor.WHITE) ? PieceColor.WHITE : PieceColor.BLACK;
         timeElapsed = 0;
-        if (gameOver == GAME_ON) checkGameResult();
+        if (gameOver == GAME_ON && !btnBack.hit(touch)) checkGameResult();
     }
     private void gameConditions() {
         isWhiteTurn = !isWhiteTurn;
